@@ -15,35 +15,39 @@ import { Login } from "./components/Login";
 
 const migrateToBilingual = (data) => {
   if (!data) return profileData;
-  if (data.en && data.ar) {
+  
+  const hasBilingual = data.en && data.ar;
+  if (hasBilingual && data.en.name !== "Sunil Kumar") {
     return data;
   }
-  
-  // Create bilingual structure from old flat data
+
+  // Source of truth for migration is either the ar version (if already bilingual) or the flat data itself
+  const source = hasBilingual ? data.ar : data;
+
   const arVersion = {
     ...profileData.ar,
-    ...data,
-    details: { ...profileData.ar.details, ...(data.details || {}) },
-    skills: { ...profileData.ar.skills, ...(data.skills || {}) },
-    projects: data.projects || profileData.ar.projects,
-    experience: data.experience || profileData.ar.experience,
-    education: data.education || profileData.ar.education,
-    services: data.services || profileData.ar.services,
-    testimonials: data.testimonials || profileData.ar.testimonials,
-    socials: data.socials || profileData.ar.socials,
+    ...source,
+    details: { ...profileData.ar.details, ...(source.details || {}) },
+    skills: { ...profileData.ar.skills, ...(source.skills || {}) },
+    projects: source.projects || profileData.ar.projects,
+    experience: source.experience || profileData.ar.experience,
+    education: source.education || profileData.ar.education,
+    services: source.services || profileData.ar.services,
+    testimonials: source.testimonials || profileData.ar.testimonials,
+    socials: source.socials || profileData.ar.socials,
   };
 
   const enVersion = {
     ...profileData.en,
-    avatar: data.avatar || profileData.en.avatar,
-    resumeUrl: data.resumeUrl || profileData.en.resumeUrl,
-    details: {
-      ...profileData.en.details,
-      email: data.details?.email || profileData.en.details.email,
-      phone: data.details?.phone || profileData.en.details.phone,
-      flag: data.details?.flag || profileData.en.details.flag,
-    },
-    socials: data.socials || profileData.en.socials,
+    ...source,
+    details: { ...profileData.en.details, ...(source.details || {}) },
+    skills: { ...profileData.en.skills, ...(source.skills || {}) },
+    projects: source.projects || profileData.en.projects,
+    experience: source.experience || profileData.en.experience,
+    education: source.education || profileData.en.education,
+    services: source.services || profileData.en.services,
+    testimonials: source.testimonials || source.testimonials || profileData.en.testimonials,
+    socials: source.socials || profileData.en.socials,
   };
 
   return {
