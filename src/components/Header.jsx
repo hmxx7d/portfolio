@@ -110,9 +110,10 @@ export function Header({ name, currentPage, onNavigate }) {
       </ul>
 
       <a 
-        href="#contact" 
+        href="https://wa.me/96899100882" 
+        target="_blank"
+        rel="noopener noreferrer"
         className="header-cta-btn"
-        onClick={(e) => { e.preventDefault(); scrollToSection("contact"); }}
       >
         Let's Talk
       </a>

@@ -48,8 +48,21 @@ export function ServicesPage({ name, services = [] }) {
             )}
 
             <div className="service-card-footer" style={{ borderTop: "1px solid var(--border)", paddingTop: "12px", marginTop: "8px" }}>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: "600" }}>Get Started</span>
-              <a href="#contact" className="service-arrow-btn" title="Order Service">
+              <a 
+                href="https://wa.me/96899100882" 
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: "600", textDecoration: "none" }}
+              >
+                Get Started
+              </a>
+              <a 
+                href="https://wa.me/96899100882" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="service-arrow-btn" 
+                title="Order Service"
+              >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
