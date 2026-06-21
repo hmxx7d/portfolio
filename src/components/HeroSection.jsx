@@ -51,7 +51,12 @@ export function HeroSection({ name, title, bio, avatar, details, resumeUrl }) {
         </div>
 
         <div className="hero-action-buttons">
-          <a href="#contact" className="btn-hero-primary" onClick={scrollToContact}>
+          <a 
+            href="https://wa.me/96899100882" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-hero-primary"
+          >
             Contact me
           </a>
           {resumeUrl ? (
