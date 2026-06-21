@@ -1,12 +1,15 @@
 import React from "react";
+import { uiTranslations } from "../translations";
 
-export function TestimonialsSection({ testimonials = [] }) {
+export function TestimonialsSection({ testimonials = [], currentLang }) {
+  const t = uiTranslations[currentLang || "ar"];
+
   return (
     <section className="section" id="testimonials">
       <div className="section-title-wrapper">
-        <h2 className="section-main-title">What My <span>Clients Say</span></h2>
+        <h2 className="section-main-title">{t.testimonialsTitle} <span>{t.testimonialsTitleSpan}</span></h2>
         <p className="section-main-subtitle">
-          Don't take my word for it. Here is the feedback from some of the amazing teams and clients I've collaborated with.
+          {t.testimonialsSubtitle}
         </p>
       </div>
 

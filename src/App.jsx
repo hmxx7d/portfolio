@@ -13,12 +13,66 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { supabase } from "./supabaseClient";
 import { Login } from "./components/Login";
 
+const migrateToBilingual = (data) => {
+  if (!data) return profileData;
+  if (data.en && data.ar) {
+    return data;
+  }
+  
+  // Create bilingual structure from old flat data
+  const arVersion = {
+    ...profileData.ar,
+    ...data,
+    details: { ...profileData.ar.details, ...(data.details || {}) },
+    skills: { ...profileData.ar.skills, ...(data.skills || {}) },
+    projects: data.projects || profileData.ar.projects,
+    experience: data.experience || profileData.ar.experience,
+    education: data.education || profileData.ar.education,
+    services: data.services || profileData.ar.services,
+    testimonials: data.testimonials || profileData.ar.testimonials,
+    socials: data.socials || profileData.ar.socials,
+  };
+
+  const enVersion = {
+    ...profileData.en,
+    avatar: data.avatar || profileData.en.avatar,
+    resumeUrl: data.resumeUrl || profileData.en.resumeUrl,
+    details: {
+      ...profileData.en.details,
+      email: data.details?.email || profileData.en.details.email,
+      phone: data.details?.phone || profileData.en.details.phone,
+      flag: data.details?.flag || profileData.en.details.flag,
+    },
+    socials: data.socials || profileData.en.socials,
+  };
+
+  return {
+    en: enVersion,
+    ar: arVersion
+  };
+};
+
 function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [currentPage, setCurrentPage] = useState("home");
   const [session, setSession] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  const [currentLang, setCurrentLang] = useState(() => {
+    return localStorage.getItem("lang") || "ar";
+  });
+
+  // Listen to language changes to update page layout direction
+  useEffect(() => {
+    document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = currentLang;
+    localStorage.setItem("lang", currentLang);
+  }, [currentLang]);
+
+  const handleToggleLang = () => {
+    setCurrentLang(prev => prev === "ar" ? "en" : "ar");
+  };
 
   // 1. Listen to Supabase Auth state changes
   useEffect(() => {
@@ -35,6 +89,19 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const [profile, setProfile] = useState(() => {
+    const saved = localStorage.getItem("profileData");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return migrateToBilingual(parsed);
+      } catch (e) {
+        console.error("Error parsing saved profileData", e);
+      }
+    }
+    return profileData;
+  });
+
   // 2. Fetch profile data from Supabase on load
   useEffect(() => {
     const fetchProfile = async () => {
@@ -49,15 +116,8 @@ function App() {
 
         if (data && data.data) {
           const loadedData = data.data;
-          // Migrate old placeholder projects if present in Supabase data
-          if (loadedData.projects && loadedData.projects.some(p => ["proj1", "proj2", "proj3"].includes(p.id))) {
-            loadedData.projects = profileData.projects;
-          }
-          // Enforce Instagram only if it contains old profiles or doesn't have Instagram
-          if (!loadedData.socials || loadedData.socials.length > 1 || !loadedData.socials.some(s => s.name.toLowerCase() === "instagram")) {
-            loadedData.socials = profileData.socials;
-          }
-          setProfile(loadedData);
+          const bilingualData = migrateToBilingual(loadedData);
+          setProfile(bilingualData);
         }
       } catch (err) {
         console.error("Error fetching profile from Supabase:", err.message);
@@ -76,46 +136,6 @@ function App() {
       setShowAdmin(false);
     }
   };
-
-  const [profile, setProfile] = useState(() => {
-    // Check if custom data exists in localStorage
-    const saved = localStorage.getItem("profileData");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // Migrate old avatar path if stored in localStorage
-        if (parsed.avatar === "/avatar.png") {
-          parsed.avatar = "/avatar.jpeg";
-        }
-        if (parsed.testimonials) {
-          parsed.testimonials = parsed.testimonials.map(t => ({
-            ...t,
-            avatar: t.avatar === "/avatar.png" ? "/avatar.jpeg" : t.avatar
-          }));
-        }
-        // Deep merge details & skills and supply default lists for newly controllable fields
-        const merged = {
-          ...profileData,
-          ...parsed,
-          details: { ...profileData.details, ...(parsed.details || {}) },
-          skills: { ...profileData.skills, ...(parsed.skills || {}) },
-          projects: (parsed.projects && !parsed.projects.some(p => ["proj1", "proj2", "proj3"].includes(p.id))) ? parsed.projects : profileData.projects,
-          experience: parsed.experience || profileData.experience,
-          education: parsed.education || profileData.education,
-          services: parsed.services || profileData.services,
-          testimonials: parsed.testimonials || profileData.testimonials,
-          socials: parsed.socials || profileData.socials,
-        };
-        if (!merged.socials || merged.socials.length > 1 || !merged.socials.some(s => s.name.toLowerCase() === "instagram")) {
-          merged.socials = profileData.socials;
-        }
-        return merged;
-      } catch (e) {
-        console.error("Error parsing saved profileData", e);
-      }
-    }
-    return profileData;
-  });
 
   useEffect(() => {
     if (showAdmin) return;
@@ -187,6 +207,8 @@ function App() {
     }
   };
 
+  const p = profile[currentLang];
+
   return (
     <>
       {/* Ambient background blobs */}
@@ -201,54 +223,61 @@ function App() {
           onClose={() => setShowAdmin(false)}
           onLogout={handleLogout}
           isSaving={isSaving}
+          currentLang={currentLang}
         />
       ) : (
         <>
           <div className="app-container">
             <Header 
-              name={profile.name} 
+              name={p.name} 
               currentPage={currentPage}
               onNavigate={setCurrentPage}
+              currentLang={currentLang}
+              onToggleLang={handleToggleLang}
             />
             
             {currentPage === "home" ? (
               <>
                 <HeroSection 
-                  name={profile.name}
-                  title={profile.title}
-                  bio={profile.bio}
-                  avatar={profile.avatar}
-                  details={profile.details}
-                  resumeUrl={profile.resumeUrl}
+                  name={p.name}
+                  title={p.title}
+                  bio={p.bio}
+                  avatar={p.avatar}
+                  details={p.details}
+                  resumeUrl={p.resumeUrl}
+                  currentLang={currentLang}
                 />
 
                 <PortfolioSection 
-                  projects={profile.projects} 
+                  projects={p.projects} 
                   onSeeAllProjects={() => setCurrentPage("projects")}
+                  currentLang={currentLang}
                 />
 
                 <ServicesSection 
-                  services={profile.services} 
+                  services={p.services} 
                   onSeeAllServices={() => setCurrentPage("services")} 
+                  currentLang={currentLang}
                 />
 
-                <SkillsSection skills={profile.skills} />
+                <SkillsSection skills={p.skills} currentLang={currentLang} />
 
-                <TestimonialsSection testimonials={profile.testimonials} />
+                <TestimonialsSection testimonials={p.testimonials} currentLang={currentLang} />
               </>
             ) : currentPage === "services" ? (
-              <ServicesPage name={profile.name} services={profile.services} />
+              <ServicesPage name={p.name} services={p.services} currentLang={currentLang} />
             ) : (
-              <ProjectsPage projects={profile.projects} />
+              <ProjectsPage projects={p.projects} currentLang={currentLang} />
             )}
           </div>
 
           <Footer 
-            name={profile.name} 
-            details={profile.details} 
-            socials={profile.socials} 
+            name={p.name} 
+            details={p.details} 
+            socials={p.socials} 
             currentPage={currentPage}
             onNavigate={setCurrentPage}
+            currentLang={currentLang}
           />
 
           {/* Floating Admin Settings Trigger */}

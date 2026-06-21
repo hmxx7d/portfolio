@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { supabase } from "../supabaseClient";
 
-export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
+export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving, currentLang }) {
   const [activeTab, setActiveTab] = useState("general");
   const [formData, setFormData] = useState(data);
   const [uploading, setUploading] = useState({});
+  const [editingLang, setEditingLang] = useState(currentLang || "ar");
 
   // Helper to upload images to Supabase Storage
   const handleImageUpload = async (e, type, id) => {
@@ -52,7 +53,10 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
   const handleFieldChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [editingLang]: {
+        ...prev[editingLang],
+        [field]: value
+      }
     }));
   };
 
@@ -60,9 +64,12 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
   const handleDetailChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      details: {
-        ...prev.details,
-        [field]: value
+      [editingLang]: {
+        ...prev[editingLang],
+        details: {
+          ...prev[editingLang].details,
+          [field]: value
+        }
       }
     }));
   };
@@ -71,7 +78,10 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
   const handleSocialChange = (index, value) => {
     setFormData(prev => ({
       ...prev,
-      socials: prev.socials.map((soc, i) => i === index ? { ...soc, url: value } : soc)
+      [editingLang]: {
+        ...prev[editingLang],
+        socials: prev[editingLang].socials.map((soc, i) => i === index ? { ...soc, url: value } : soc)
+      }
     }));
   };
 
@@ -80,9 +90,12 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
     if (!skill.trim()) return;
     setFormData(prev => ({
       ...prev,
-      skills: {
-        ...prev.skills,
-        [category]: [...(prev.skills[category] || []), skill.trim()]
+      [editingLang]: {
+        ...prev[editingLang],
+        skills: {
+          ...prev[editingLang].skills,
+          [category]: [...(prev[editingLang].skills[category] || []), skill.trim()]
+        }
       }
     }));
   };
@@ -90,9 +103,12 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
   const handleRemoveSkill = (category, index) => {
     setFormData(prev => ({
       ...prev,
-      skills: {
-        ...prev.skills,
-        [category]: prev.skills[category].filter((_, i) => i !== index)
+      [editingLang]: {
+        ...prev[editingLang],
+        skills: {
+          ...prev[editingLang].skills,
+          [category]: prev[editingLang].skills[category].filter((_, i) => i !== index)
+        }
       }
     }));
   };
@@ -101,17 +117,20 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
   const handleProjectChange = (id, field, value) => {
     setFormData(prev => ({
       ...prev,
-      projects: prev.projects.map(proj => 
-        proj.id === id ? { ...proj, [field]: value } : proj
-      )
+      [editingLang]: {
+        ...prev[editingLang],
+        projects: prev[editingLang].projects.map(proj => 
+          proj.id === id ? { ...proj, [field]: value } : proj
+        )
+      }
     }));
   };
 
   const handleAddProject = () => {
     const newProj = {
       id: `proj_${Date.now()}`,
-      name: "New Project",
-      desc: "Project description...",
+      name: editingLang === "ar" ? "مشروع جديد" : "New Project",
+      desc: editingLang === "ar" ? "وصف المشروع..." : "Project description...",
       image: "/project1.png",
       techs: ["React"],
       category: "frontend",
@@ -120,14 +139,20 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
     };
     setFormData(prev => ({
       ...prev,
-      projects: [...prev.projects, newProj]
+      [editingLang]: {
+        ...prev[editingLang],
+        projects: [...prev[editingLang].projects, newProj]
+      }
     }));
   };
 
   const handleRemoveProject = (id) => {
     setFormData(prev => ({
       ...prev,
-      projects: prev.projects.filter(proj => proj.id !== id)
+      [editingLang]: {
+        ...prev[editingLang],
+        projects: prev[editingLang].projects.filter(proj => proj.id !== id)
+      }
     }));
   };
 
@@ -135,31 +160,40 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
   const handleExpChange = (id, field, value) => {
     setFormData(prev => ({
       ...prev,
-      experience: prev.experience.map(exp => 
-        exp.id === id ? { ...exp, [field]: value } : exp
-      )
+      [editingLang]: {
+        ...prev[editingLang],
+        experience: prev[editingLang].experience.map(exp => 
+          exp.id === id ? { ...exp, [field]: value } : exp
+        )
+      }
     }));
   };
 
   const handleAddExp = () => {
     const newExp = {
       id: `exp_${Date.now()}`,
-      company: "New Company",
-      role: "Software Engineer",
+      company: editingLang === "ar" ? "شركة جديدة" : "New Company",
+      role: editingLang === "ar" ? "مهندس برمجيات" : "Software Engineer",
       date: "2025 – 2026",
-      points: ["Brief achievement 1", "Brief achievement 2"],
+      points: editingLang === "ar" ? ["إنجاز مختصر 1", "إنجاز مختصر 2"] : ["Brief achievement 1", "Brief achievement 2"],
       accent: "violet"
     };
     setFormData(prev => ({
       ...prev,
-      experience: [...prev.experience, newExp]
+      [editingLang]: {
+        ...prev[editingLang],
+        experience: [...prev[editingLang].experience, newExp]
+      }
     }));
   };
 
   const handleRemoveExp = (id) => {
     setFormData(prev => ({
       ...prev,
-      experience: prev.experience.filter(exp => exp.id !== id)
+      [editingLang]: {
+        ...prev[editingLang],
+        experience: prev[editingLang].experience.filter(exp => exp.id !== id)
+      }
     }));
   };
 
@@ -167,29 +201,38 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
   const handleEduChange = (id, field, value) => {
     setFormData(prev => ({
       ...prev,
-      education: prev.education.map(edu => 
-        edu.id === id ? { ...edu, [field]: value } : edu
-      )
+      [editingLang]: {
+        ...prev[editingLang],
+        education: prev[editingLang].education.map(edu => 
+          edu.id === id ? { ...edu, [field]: value } : edu
+        )
+      }
     }));
   };
 
   const handleAddEdu = () => {
     const newEdu = {
       id: `edu_${Date.now()}`,
-      degree: "Certificate / Degree Title",
-      school: "School / Institution Name",
+      degree: editingLang === "ar" ? "عنوان الشهادة" : "Certificate / Degree Title",
+      school: editingLang === "ar" ? "اسم المؤسسة التعليمية" : "School / Institution Name",
       year: "2024–2025"
     };
     setFormData(prev => ({
       ...prev,
-      education: [...(prev.education || []), newEdu]
+      [editingLang]: {
+        ...prev[editingLang],
+        education: [...(prev[editingLang].education || []), newEdu]
+      }
     }));
   };
 
   const handleRemoveEdu = (id) => {
     setFormData(prev => ({
       ...prev,
-      education: prev.education.filter(edu => edu.id !== id)
+      [editingLang]: {
+        ...prev[editingLang],
+        education: prev[editingLang].education.filter(edu => edu.id !== id)
+      }
     }));
   };
 
@@ -197,31 +240,40 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
   const handleServiceChange = (id, field, value) => {
     setFormData(prev => ({
       ...prev,
-      services: prev.services.map(srv => 
-        srv.id === id ? { ...srv, [field]: value } : srv
-      )
+      [editingLang]: {
+        ...prev[editingLang],
+        services: prev[editingLang].services.map(srv => 
+          srv.id === id ? { ...srv, [field]: value } : srv
+        )
+      }
     }));
   };
 
   const handleAddService = () => {
     const newSrv = {
       id: `srv_${Date.now()}`,
-      title: "New Service Offered",
-      desc: "Service description goes here...",
+      title: editingLang === "ar" ? "خدمة جديدة معروضة" : "New Service Offered",
+      desc: editingLang === "ar" ? "وصف الخدمة هنا..." : "Service description goes here...",
       icon: "📐",
       image: "/project1.png",
-      features: ["Key Feature 1", "Key Feature 2"]
+      features: editingLang === "ar" ? ["ميزة رئيسية 1", "ميزة رئيسية 2"] : ["Key Feature 1", "Key Feature 2"]
     };
     setFormData(prev => ({
       ...prev,
-      services: [...(prev.services || []), newSrv]
+      [editingLang]: {
+        ...prev[editingLang],
+        services: [...(prev[editingLang].services || []), newSrv]
+      }
     }));
   };
 
   const handleRemoveService = (id) => {
     setFormData(prev => ({
       ...prev,
-      services: prev.services.filter(srv => srv.id !== id)
+      [editingLang]: {
+        ...prev[editingLang],
+        services: prev[editingLang].services.filter(srv => srv.id !== id)
+      }
     }));
   };
 
@@ -229,9 +281,12 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
   const handleTestimonialChange = (id, field, value) => {
     setFormData(prev => ({
       ...prev,
-      testimonials: prev.testimonials.map(t => 
-        t.id === id ? { ...t, [field]: value } : t
-      )
+      [editingLang]: {
+        ...prev[editingLang],
+        testimonials: prev[editingLang].testimonials.map(t => 
+          t.id === id ? { ...t, [field]: value } : t
+        )
+      }
     }));
   };
 
@@ -239,21 +294,27 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
     const newT = {
       id: `t_${Date.now()}`,
       stars: 5,
-      quote: "Outstanding work! The developer exceeded our expectations...",
-      name: "Client Name",
-      title: "CEO / Manager",
+      quote: editingLang === "ar" ? "عمل رائع! فاق المطور توقعاتنا..." : "Outstanding work! The developer exceeded our expectations...",
+      name: editingLang === "ar" ? "اسم العميل" : "Client Name",
+      title: editingLang === "ar" ? "المدير التنفيزي / مدير المشروع" : "CEO / Manager",
       avatar: "/avatar.jpeg"
     };
     setFormData(prev => ({
       ...prev,
-      testimonials: [...(prev.testimonials || []), newT]
+      [editingLang]: {
+        ...prev[editingLang],
+        testimonials: [...(prev[editingLang].testimonials || []), newT]
+      }
     }));
   };
 
   const handleRemoveTestimonial = (id) => {
     setFormData(prev => ({
       ...prev,
-      testimonials: prev.testimonials.filter(t => t.id !== id)
+      [editingLang]: {
+        ...prev[editingLang],
+        testimonials: prev[editingLang].testimonials.filter(t => t.id !== id)
+      }
     }));
   };
 
@@ -262,6 +323,8 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
     e.preventDefault();
     onSave(formData);
   };
+
+  const currentData = formData[editingLang] || {};
 
   return (
     <div className="admin-container">
@@ -337,7 +400,42 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
 
       <form onSubmit={handleSubmit} className="admin-content">
         <header className="admin-content-header">
-          <h2>Editing Profile Settings</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <h2>Editing Profile Settings</h2>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Editing Language:</span>
+              <button 
+                type="button" 
+                onClick={() => setEditingLang("en")}
+                style={{
+                  padding: "4px 8px",
+                  fontSize: "0.75rem",
+                  borderRadius: "4px",
+                  border: "1px solid " + (editingLang === "en" ? "var(--violet)" : "var(--border)"),
+                  background: editingLang === "en" ? "var(--violet)" : "transparent",
+                  color: "#fff",
+                  cursor: "pointer"
+                }}
+              >
+                🇺🇸 EN
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setEditingLang("ar")}
+                style={{
+                  padding: "4px 8px",
+                  fontSize: "0.75rem",
+                  borderRadius: "4px",
+                  border: "1px solid " + (editingLang === "ar" ? "var(--violet)" : "var(--border)"),
+                  background: editingLang === "ar" ? "var(--violet)" : "transparent",
+                  color: "#fff",
+                  cursor: "pointer"
+                }}
+              >
+                🇴🇲 AR
+              </button>
+            </div>
+          </div>
           <div className="admin-actions">
             <button type="button" className="btn-secondary" onClick={onClose} disabled={isSaving}>Cancel</button>
             <button type="submit" className="btn-primary" disabled={isSaving}>
@@ -356,7 +454,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <label>Name</label>
                 <input 
                   type="text" 
-                  value={formData.name} 
+                  value={currentData.name || ""} 
                   onChange={e => handleFieldChange("name", e.target.value)} 
                   required
                 />
@@ -366,7 +464,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <label>Professional Title</label>
                 <input 
                   type="text" 
-                  value={formData.title} 
+                  value={currentData.title || ""} 
                   onChange={e => handleFieldChange("title", e.target.value)} 
                   required
                 />
@@ -376,7 +474,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <label>Bio Summary</label>
                 <textarea 
                   rows="3" 
-                  value={formData.bio} 
+                  value={currentData.bio || ""} 
                   onChange={e => handleFieldChange("bio", e.target.value)} 
                   required
                 />
@@ -385,15 +483,15 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
               <div className="form-group">
                 <label>Avatar / Profile Image Path</label>
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  {formData.avatar && (
+                  {currentData.avatar && (
                     <div className="image-preview-box" style={{ width: "80px", height: "80px", borderRadius: "50%", overflow: "hidden", border: "2px solid var(--violet)", background: "rgba(0,0,0,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <img src={formData.avatar} alt="Avatar Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img src={currentData.avatar} alt="Avatar Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                   )}
                   <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                     <input 
                       type="text" 
-                      value={formData.avatar} 
+                      value={currentData.avatar || ""} 
                       onChange={e => handleFieldChange("avatar", e.target.value)} 
                       required
                       style={{ flex: 1 }}
@@ -416,7 +514,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <label>Age</label>
                 <input 
                   type="text" 
-                  value={formData.details.age} 
+                  value={currentData.details?.age || ""} 
                   onChange={e => handleDetailChange("age", e.target.value)} 
                   required
                 />
@@ -426,7 +524,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <label>Location</label>
                 <input 
                   type="text" 
-                  value={formData.details.location} 
+                  value={currentData.details?.location || ""} 
                   onChange={e => handleDetailChange("location", e.target.value)} 
                   required
                 />
@@ -436,7 +534,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <label>Email Address</label>
                 <input 
                   type="email" 
-                  value={formData.details.email} 
+                  value={currentData.details?.email || ""} 
                   onChange={e => handleDetailChange("email", e.target.value)} 
                   required
                 />
@@ -446,7 +544,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <label>Phone Number</label>
                 <input 
                   type="text" 
-                  value={formData.details.phone} 
+                  value={currentData.details?.phone || ""} 
                   onChange={e => handleDetailChange("phone", e.target.value)} 
                   required
                 />
@@ -456,7 +554,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <label>Country Flag Emoji</label>
                 <input 
                   type="text" 
-                  value={formData.details.flag || "🇮🇳"} 
+                  value={currentData.details?.flag || "🇮🇳"} 
                   onChange={e => handleDetailChange("flag", e.target.value)} 
                   required
                 />
@@ -466,7 +564,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <label>Interests (comma separated)</label>
                 <input 
                   type="text" 
-                  value={formData.interests ? formData.interests.join(", ") : ""} 
+                  value={currentData.interests ? currentData.interests.join(", ") : ""} 
                   onChange={e => handleFieldChange(
                     "interests", 
                     e.target.value.split(",").map(i => i.trim()).filter(Boolean)
@@ -479,7 +577,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                 <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                   <input 
                     type="text" 
-                    value={formData.resumeUrl || ""} 
+                    value={currentData.resumeUrl || ""} 
                     onChange={e => handleFieldChange("resumeUrl", e.target.value)} 
                     placeholder="Upload your CV/Resume file or paste public URL"
                     style={{ flex: 1 }}
@@ -499,12 +597,12 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
 
               <h3 className="full-width" style={{ color: "var(--violet)", marginTop: "20px", marginBottom: "10px" }}>Social Media Profiles</h3>
               
-              {formData.socials?.map((soc, idx) => (
+              {currentData.socials?.map((soc, idx) => (
                 <div className="form-group" key={idx}>
                   <label>{soc.name} URL</label>
                   <input 
                     type="text" 
-                    value={soc.url} 
+                    value={soc.url || ""} 
                     onChange={e => handleSocialChange(idx, e.target.value)} 
                   />
                 </div>
@@ -516,14 +614,14 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
           {activeTab === "services" && (
             <div className="admin-list-section">
               <div className="section-action-header">
-                <h3>Offered Services ({formData.services ? formData.services.length : 0})</h3>
+                <h3>Offered Services ({currentData.services ? currentData.services.length : 0})</h3>
                 <button type="button" className="btn-add-item" onClick={handleAddService}>
                   + Add Service
                 </button>
               </div>
 
               <div className="item-edit-list">
-                {formData.services?.map((srv, idx) => (
+                {currentData.services?.map((srv, idx) => (
                   <div className="item-edit-card" key={srv.id || idx}>
                     <div className="item-card-header">
                       <h4>Service #{idx + 1}: {srv.title}</h4>
@@ -541,7 +639,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Service Title</label>
                         <input 
                           type="text" 
-                          value={srv.title} 
+                          value={srv.title || ""} 
                           onChange={e => handleServiceChange(srv.id, "title", e.target.value)}
                         />
                       </div>
@@ -549,7 +647,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Icon / Emoji</label>
                         <input 
                           type="text" 
-                          value={srv.icon} 
+                          value={srv.icon || ""} 
                           onChange={e => handleServiceChange(srv.id, "icon", e.target.value)}
                         />
                       </div>
@@ -557,7 +655,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Short Description</label>
                         <input 
                           type="text" 
-                          value={srv.desc} 
+                          value={srv.desc || ""} 
                           onChange={e => handleServiceChange(srv.id, "desc", e.target.value)}
                         />
                       </div>
@@ -605,15 +703,15 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
           {activeTab === "projects" && (
             <div className="admin-list-section">
               <div className="section-action-header">
-                <h3>Projects List ({formData.projects.length})</h3>
+                <h3>Projects List ({currentData.projects ? currentData.projects.length : 0})</h3>
                 <button type="button" className="btn-add-item" onClick={handleAddProject}>
                   + Add Project
                 </button>
               </div>
 
               <div className="item-edit-list">
-                {formData.projects.map((proj, idx) => (
-                  <div className="item-edit-card" key={proj.id}>
+                {currentData.projects?.map((proj, idx) => (
+                  <div className="item-edit-card" key={proj.id || idx}>
                     <div className="item-card-header">
                       <h4>Project #{idx + 1}: {proj.name}</h4>
                       <button 
@@ -630,14 +728,14 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Project Name</label>
                         <input 
                           type="text" 
-                          value={proj.name} 
+                          value={proj.name || ""} 
                           onChange={e => handleProjectChange(proj.id, "name", e.target.value)}
                         />
                       </div>
                       <div className="form-group">
                         <label>Category</label>
                         <select 
-                          value={proj.category} 
+                          value={proj.category || "frontend"} 
                           onChange={e => handleProjectChange(proj.id, "category", e.target.value)}
                         >
                           <option value="frontend">Frontend</option>
@@ -649,7 +747,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Description</label>
                         <input 
                           type="text" 
-                          value={proj.desc} 
+                          value={proj.desc || ""} 
                           onChange={e => handleProjectChange(proj.id, "desc", e.target.value)}
                         />
                       </div>
@@ -657,7 +755,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>GitHub Link</label>
                         <input 
                           type="text" 
-                          value={proj.github} 
+                          value={proj.github || ""} 
                           onChange={e => handleProjectChange(proj.id, "github", e.target.value)}
                         />
                       </div>
@@ -665,7 +763,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Live Demo Link</label>
                         <input 
                           type="text" 
-                          value={proj.live} 
+                          value={proj.live || ""} 
                           onChange={e => handleProjectChange(proj.id, "live", e.target.value)}
                         />
                       </div>
@@ -701,7 +799,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Tech tags (comma separated)</label>
                         <input 
                           type="text" 
-                          value={proj.techs.join(", ")} 
+                          value={proj.techs ? proj.techs.join(", ") : ""} 
                           onChange={e => handleProjectChange(
                             proj.id, 
                             "techs", 
@@ -719,11 +817,11 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
           {/* ───────────────── SKILLS TAB ───────────────── */}
           {activeTab === "skills" && (
             <div className="skills-setup-container">
-              {Object.keys(formData.skills).map(category => (
+              {currentData.skills && Object.keys(currentData.skills).map(category => (
                 <div className="skill-edit-group" key={category}>
                   <h4 className="skill-group-title">{category.toUpperCase()} SKILLS</h4>
                   <div className="skill-edit-tags">
-                    {formData.skills[category].map((skill, idx) => (
+                    {currentData.skills[category]?.map((skill, idx) => (
                       <span className="skill-edit-tag" key={idx}>
                         {skill}
                         <button 
@@ -773,15 +871,15 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
               {/* WORK EXPERIENCE */}
               <div className="admin-list-section" style={{ marginBottom: "40px" }}>
                 <div className="section-action-header">
-                  <h3>Work Experience ({formData.experience.length})</h3>
+                  <h3>Work Experience ({currentData.experience ? currentData.experience.length : 0})</h3>
                   <button type="button" className="btn-add-item" onClick={handleAddExp}>
                     + Add Role
                   </button>
                 </div>
 
                 <div className="item-edit-list">
-                  {formData.experience.map((exp, idx) => (
-                    <div className="item-edit-card" key={exp.id}>
+                  {currentData.experience?.map((exp, idx) => (
+                    <div className="item-edit-card" key={exp.id || idx}>
                       <div className="item-card-header">
                         <h4>Role #{idx + 1}: {exp.company}</h4>
                         <button 
@@ -798,7 +896,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                           <label>Company Name</label>
                           <input 
                             type="text" 
-                            value={exp.company} 
+                            value={exp.company || ""} 
                             onChange={e => handleExpChange(exp.id, "company", e.target.value)}
                           />
                         </div>
@@ -806,7 +904,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                           <label>Role</label>
                           <input 
                             type="text" 
-                            value={exp.role} 
+                            value={exp.role || ""} 
                             onChange={e => handleExpChange(exp.id, "role", e.target.value)}
                           />
                         </div>
@@ -814,14 +912,14 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                           <label>Date Period</label>
                           <input 
                             type="text" 
-                            value={exp.date} 
+                            value={exp.date || ""} 
                             onChange={e => handleExpChange(exp.id, "date", e.target.value)}
                           />
                         </div>
                         <div className="form-group">
                           <label>Accent Color</label>
                           <select 
-                            value={exp.accent} 
+                            value={exp.accent || "violet"} 
                             onChange={e => handleExpChange(exp.id, "accent", e.target.value)}
                           >
                             <option value="violet">Violet (Orange)</option>
@@ -833,7 +931,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                           <label>Key Responsibilities (one per line)</label>
                           <textarea 
                             rows="3" 
-                            value={exp.points.join("\n")} 
+                            value={exp.points ? exp.points.join("\n") : ""} 
                             onChange={e => handleExpChange(exp.id, "points", e.target.value.split("\n").filter(Boolean))}
                           />
                         </div>
@@ -846,14 +944,14 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
               {/* EDUCATION */}
               <div className="admin-list-section">
                 <div className="section-action-header">
-                  <h3>Education Timeline ({formData.education ? formData.education.length : 0})</h3>
+                  <h3>Education Timeline ({currentData.education ? currentData.education.length : 0})</h3>
                   <button type="button" className="btn-add-item" onClick={handleAddEdu}>
                     + Add Education
                   </button>
                 </div>
 
                 <div className="item-edit-list">
-                  {formData.education?.map((edu, idx) => (
+                  {currentData.education?.map((edu, idx) => (
                     <div className="item-edit-card" key={edu.id || idx}>
                       <div className="item-card-header">
                         <h4>Credential #{idx + 1}: {edu.degree}</h4>
@@ -871,7 +969,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                           <label>Degree / Certificate</label>
                           <input 
                             type="text" 
-                            value={edu.degree} 
+                            value={edu.degree || ""} 
                             onChange={e => handleEduChange(edu.id, "degree", e.target.value)}
                           />
                         </div>
@@ -879,7 +977,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                           <label>School / University</label>
                           <input 
                             type="text" 
-                            value={edu.school} 
+                            value={edu.school || ""} 
                             onChange={e => handleEduChange(edu.id, "school", e.target.value)}
                           />
                         </div>
@@ -887,7 +985,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                           <label>Year / Duration</label>
                           <input 
                             type="text" 
-                            value={edu.year} 
+                            value={edu.year || ""} 
                             onChange={e => handleEduChange(edu.id, "year", e.target.value)}
                           />
                         </div>
@@ -903,14 +1001,14 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
           {activeTab === "testimonials" && (
             <div className="admin-list-section">
               <div className="section-action-header">
-                <h3>Client Reviews ({formData.testimonials ? formData.testimonials.length : 0})</h3>
+                <h3>Client Reviews ({currentData.testimonials ? currentData.testimonials.length : 0})</h3>
                 <button type="button" className="btn-add-item" onClick={handleAddTestimonial}>
                   + Add Review
                 </button>
               </div>
 
               <div className="item-edit-list">
-                {formData.testimonials?.map((t, idx) => (
+                {currentData.testimonials?.map((t, idx) => (
                   <div className="item-edit-card" key={t.id || idx}>
                     <div className="item-card-header">
                       <h4>Review #{idx + 1}: {t.name}</h4>
@@ -928,7 +1026,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Client Name</label>
                         <input 
                           type="text" 
-                          value={t.name} 
+                          value={t.name || ""} 
                           onChange={e => handleTestimonialChange(t.id, "name", e.target.value)}
                         />
                       </div>
@@ -936,7 +1034,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Client Title / Company</label>
                         <input 
                           type="text" 
-                          value={t.title} 
+                          value={t.title || ""} 
                           onChange={e => handleTestimonialChange(t.id, "title", e.target.value)}
                         />
                       </div>
@@ -965,7 +1063,7 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                         <label>Review Quote</label>
                         <textarea 
                           rows="3" 
-                          value={t.quote} 
+                          value={t.quote || ""} 
                           onChange={e => handleTestimonialChange(t.id, "quote", e.target.value)}
                         />
                       </div>

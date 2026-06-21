@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { uiTranslations } from "../translations";
 
 // Premium Developer Icons in SVG format
 const icons = {
@@ -177,8 +178,9 @@ const getSkillMeta = (name) => {
   return { icon: icons.code, percent: 85, color: "#ff623e", glow: "rgba(255, 98, 62, 0.2)" }; // default
 };
 
-export function SkillsSection({ skills }) {
+export function SkillsSection({ skills, currentLang }) {
   const [activeCategory, setActiveCategory] = useState("all");
+  const t = uiTranslations[currentLang || "ar"];
 
   const allSkills = [];
   if (skills) {
@@ -205,12 +207,20 @@ export function SkillsSection({ skills }) {
   // Available categories for display
   const categories = ["all", "frontend", "backend", "tools", "design"];
 
+  const categoryLabels = {
+    all: t.skillsTabAll || "All",
+    frontend: t.skillsTabFrontend || "Frontend",
+    backend: t.skillsTabBackend || "Backend",
+    tools: t.skillsTabTools || "Tools",
+    design: t.skillsTabDesign || "Design"
+  };
+
   return (
     <section className="section" id="skills">
       <div className="section-title-wrapper">
-        <h2 className="section-main-title">My Work <span>Skills</span></h2>
+        <h2 className="section-main-title">{t.skillsTitle} <span>{t.skillsTitleSpan}</span></h2>
         <p className="section-main-subtitle">
-          We combine cutting-edge front-end technologies with robust back-end systems to construct performant solutions.
+          {t.skillsSubtitle}
         </p>
       </div>
 
@@ -223,7 +233,7 @@ export function SkillsSection({ skills }) {
             className={`filter-tab-btn ${activeCategory === cat ? "active" : ""}`}
             onClick={() => setActiveCategory(cat)}
           >
-            {cat}
+            {categoryLabels[cat] || cat}
           </button>
         ))}
       </div>
@@ -252,13 +262,13 @@ export function SkillsSection({ skills }) {
               </div>
               <div className="skill-meta-text">
                 <span className="skill-item-title">{skill.name}</span>
-                <span className="skill-category-badge">{skill.category}</span>
+                <span className="skill-category-badge">{categoryLabels[skill.category.toLowerCase()] || skill.category}</span>
               </div>
             </div>
             
             <div className="skill-progress-section">
               <div className="skill-details-area">
-                <span className="skill-progress-label">Proficiency</span>
+                <span className="skill-progress-label">{t.skillsProficiency}</span>
                 <span className="skill-progress-percent" style={{ color: skill.color }}>
                   {skill.percent}%
                 </span>

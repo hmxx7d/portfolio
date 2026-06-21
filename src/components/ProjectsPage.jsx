@@ -1,6 +1,10 @@
 import React, { useEffect } from "react";
+import { uiTranslations } from "../translations";
 
-export function ProjectsPage({ projects }) {
+export function ProjectsPage({ projects, currentLang }) {
+  const t = uiTranslations[currentLang || "ar"];
+  const isAr = currentLang === "ar";
+
   // Scroll to top on page mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -9,8 +13,12 @@ export function ProjectsPage({ projects }) {
   if (!projects || projects.length === 0) {
     return (
       <main className="section in-view" style={{ padding: "40px 0 80px", textAlign: "center" }}>
-        <h2 className="section-main-title">No <span>Projects</span> Found</h2>
-        <p className="section-main-subtitle">Add some projects in the Admin settings panel!</p>
+        <h2 className="section-main-title">
+          {isAr ? <>لم يتم العثور على <span>مشاريع</span></> : <>No <span>Projects</span> Found</>}
+        </h2>
+        <p className="section-main-subtitle">
+          {isAr ? "قم بإضافة بعض المشاريع من لوحة التحكم!" : "Add some projects in the Admin settings panel!"}
+        </p>
       </main>
     );
   }
@@ -18,9 +26,11 @@ export function ProjectsPage({ projects }) {
   return (
     <main className="section in-view" style={{ padding: "40px 0 80px" }}>
       <div className="section-title-wrapper">
-        <h2 className="section-main-title">all my <span>projects</span></h2>
+        <h2 className="section-main-title">
+          {isAr ? <>جميع <span>مشاريعي</span></> : <>all my <span>projects</span></>}
+        </h2>
         <p className="section-main-subtitle">
-          A full archive of full-stack, frontend, and backend projects I have designed and engineered.
+          {isAr ? "أرشيف كامل للمشاريع البرمجية وتطبيقات الويب والهواتف التي قمت بتصميمها وتطويرها." : "A full archive of full-stack, frontend, and backend projects I have designed and engineered."}
         </p>
       </div>
 

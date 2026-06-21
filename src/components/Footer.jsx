@@ -1,4 +1,5 @@
 import React from "react";
+import { uiTranslations } from "../translations";
 
 const getSocialIcon = (name) => {
   switch (name.toLowerCase()) {
@@ -35,8 +36,10 @@ const getSocialIcon = (name) => {
   }
 };
 
-export function Footer({ name, details, socials, currentPage, onNavigate }) {
+export function Footer({ name, details, socials, currentPage, onNavigate, currentLang }) {
   const logoText = name ? name.split(" ")[0] : "Sunil";
+  const logoInitials = logoText.slice(0, 2).toUpperCase();
+  const t = uiTranslations[currentLang || "ar"];
 
   const scrollToSection = (id) => {
     if (currentPage !== "home") {
@@ -57,11 +60,11 @@ export function Footer({ name, details, socials, currentPage, onNavigate }) {
         <div className="footer-top-grid">
           <div className="footer-column">
             <a href="#home" className="footer-logo-title" onClick={(e) => { e.preventDefault(); scrollToSection("home"); }}>
-              <div className="logo-dot">SK</div>
+              <div className="logo-dot">{logoInitials}</div>
               <span>{logoText}</span>
             </a>
             <p className="footer-desc-text">
-              Building modern, beautiful, and highly responsive user interfaces and backend applications since 2020.
+              {t.footerDesc}
             </p>
             <div className="footer-social-row">
               {socials?.map((social, idx) => (
@@ -80,17 +83,17 @@ export function Footer({ name, details, socials, currentPage, onNavigate }) {
           </div>
 
           <div className="footer-column">
-            <h4 className="footer-heading">Navigation</h4>
+            <h4 className="footer-heading">{t.footerNavHeader}</h4>
             <ul className="footer-nav-list">
-              <li><span className="footer-nav-item-link" onClick={() => scrollToSection("home")}>Home</span></li>
-              <li><span className="footer-nav-item-link" onClick={() => scrollToSection("services")}>Services</span></li>
-              <li><span className="footer-nav-item-link" onClick={() => scrollToSection("portfolio")}>Portfolio</span></li>
-              <li><span className="footer-nav-item-link" onClick={() => scrollToSection("skills")}>Skills</span></li>
+              <li><span className="footer-nav-item-link" onClick={() => scrollToSection("home")}>{t.navHome}</span></li>
+              <li><span className="footer-nav-item-link" onClick={() => scrollToSection("services")}>{t.navServices}</span></li>
+              <li><span className="footer-nav-item-link" onClick={() => scrollToSection("portfolio")}>{t.navPortfolio}</span></li>
+              <li><span className="footer-nav-item-link" onClick={() => scrollToSection("skills")}>{t.navSkills}</span></li>
             </ul>
           </div>
 
           <div className="footer-column">
-            <h4 className="footer-heading">Contact</h4>
+            <h4 className="footer-heading">{t.navContact}</h4>
             <ul className="footer-contacts-list">
               <li className="footer-contact-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -110,17 +113,17 @@ export function Footer({ name, details, socials, currentPage, onNavigate }) {
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
-                <span>{details?.location}</span>
+                <span>{details?.location} {details?.flag}</span>
               </li>
             </ul>
           </div>
 
           <div className="footer-column">
-            <h4 className="footer-heading">Subscribe</h4>
+            <h4 className="footer-heading">{t.footerSubscribeHeader}</h4>
             <div className="footer-subscription-form">
-              <p className="footer-desc-text">Get the latest information, news, and project details direct to your inbox.</p>
+              <p className="footer-desc-text">{t.footerSubscribeText}</p>
               <div className="newsletter-input-box">
-                <input type="email" placeholder="Your email address" />
+                <input type="email" placeholder={t.footerSubscribePlaceholder} />
                 <button className="newsletter-submit-btn" title="Subscribe">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="22" y1="2" x2="11" y2="13" />
@@ -133,10 +136,10 @@ export function Footer({ name, details, socials, currentPage, onNavigate }) {
         </div>
 
         <div className="footer-bottom-area">
-          <span>Copyright © {new Date().getFullYear()} {name}. All Rights Reserved.</span>
+          <span>Copyright © {new Date().getFullYear()} {name}. {t.footerCopy}</span>
           <div className="footer-bottom-links">
-            <a href="#" className="footer-bottom-link-item" onClick={(e) => e.preventDefault()}>Terms & Service</a>
-            <a href="#" className="footer-bottom-link-item" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
+            <a href="#" className="footer-bottom-link-item" onClick={(e) => e.preventDefault()}>{t.footerTerms}</a>
+            <a href="#" className="footer-bottom-link-item" onClick={(e) => e.preventDefault()}>{t.footerPrivacy}</a>
           </div>
         </div>
       </div>

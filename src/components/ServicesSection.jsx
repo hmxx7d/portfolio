@@ -1,7 +1,9 @@
 import React from "react";
+import { uiTranslations } from "../translations";
 
-export function ServicesSection({ services = [], onSeeAllServices }) {
+export function ServicesSection({ services = [], onSeeAllServices, currentLang }) {
   const displayedServices = services.slice(0, 3);
+  const t = uiTranslations[currentLang || "ar"];
 
   const scrollToContact = (e) => {
     e.preventDefault();
@@ -12,9 +14,9 @@ export function ServicesSection({ services = [], onSeeAllServices }) {
   return (
     <section className="section" id="services">
       <div className="section-title-wrapper">
-        <h2 className="section-main-title">My <span>Services</span></h2>
+        <h2 className="section-main-title">{t.servicesTitle} <span>{t.servicesTitleSpan}</span></h2>
         <p className="section-main-subtitle">
-          I provide customized services designed to amplify your digital footprint and leave a lasting brand impression.
+          {t.servicesSubtitle}
         </p>
       </div>
 
@@ -49,7 +51,7 @@ export function ServicesSection({ services = [], onSeeAllServices }) {
                 rel="noopener noreferrer"
                 style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: "600", textDecoration: "none" }}
               >
-                Get Started
+                {t.btnGetStarted}
               </a>
               <a 
                 href="https://wa.me/96899100882" 
@@ -75,7 +77,7 @@ export function ServicesSection({ services = [], onSeeAllServices }) {
           onClick={onSeeAllServices}
           style={{ background: "transparent", cursor: "pointer" }}
         >
-          See All Services
+          {t.btnSeeAllServices}
         </button>
       </div>
     </section>

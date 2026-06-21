@@ -1,7 +1,9 @@
 import React from "react";
+import { uiTranslations } from "../translations";
 
-export function PortfolioSection({ projects, onSeeAllProjects }) {
+export function PortfolioSection({ projects, onSeeAllProjects, currentLang }) {
   if (!projects || projects.length === 0) return null;
+  const t = uiTranslations[currentLang || "ar"];
 
   // Render a preview (first 3 projects) on the main page
   const previewProjects = projects.slice(0, 3);
@@ -9,9 +11,11 @@ export function PortfolioSection({ projects, onSeeAllProjects }) {
   return (
     <section className="section" id="portfolio">
       <div className="section-title-wrapper">
-        <h2 className="section-main-title">projects <span>i did</span></h2>
+        <h2 className="section-main-title">
+          {t.projectsTitle} <span>{t.projectsTitleSpan}</span>
+        </h2>
         <p className="section-main-subtitle">
-          Explore a selection of recent projects built using React, Python, Node.js, and modern full-stack tools.
+          {t.projectsSubtitle}
         </p>
       </div>
 
@@ -61,7 +65,7 @@ export function PortfolioSection({ projects, onSeeAllProjects }) {
           onClick={onSeeAllProjects}
           style={{ background: "transparent", cursor: "pointer" }}
         >
-          see all my projects
+          {t.btnSeeAllProjects}
         </button>
       </div>
     </section>

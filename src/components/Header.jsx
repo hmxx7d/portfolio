@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { uiTranslations } from "../translations";
 
-export function Header({ name, currentPage, onNavigate }) {
+export function Header({ name, currentPage, onNavigate, currentLang, onToggleLang }) {
   const [activeAnchor, setActiveAnchor] = useState("#home");
   const logoText = name ? name.split(" ")[0] : "Sunil";
   const isHome = currentPage === "home";
+  const t = uiTranslations[currentLang || "ar"];
 
   useEffect(() => {
     if (!isHome) return;
@@ -46,11 +48,12 @@ export function Header({ name, currentPage, onNavigate }) {
 
   const isServices = currentPage === "services";
   const isProjects = currentPage === "projects";
+  const logoInitials = logoText.slice(0, 2).toUpperCase();
 
   return (
     <header className="main-header">
       <a href="#home" className="header-logo" onClick={(e) => { e.preventDefault(); scrollToSection("home"); }}>
-        <div className="logo-dot">SK</div>
+        <div className="logo-dot">{logoInitials}</div>
         <span>{logoText}</span>
       </a>
 
@@ -60,7 +63,7 @@ export function Header({ name, currentPage, onNavigate }) {
             className={`nav-item-link ${isHome && activeAnchor === "#home" ? "active" : ""}`}
             onClick={() => scrollToSection("home")}
           >
-            Home
+            {t.navHome}
           </span>
         </li>
         <li>
@@ -74,7 +77,7 @@ export function Header({ name, currentPage, onNavigate }) {
               }
             }}
           >
-            Services
+            {t.navServices}
           </span>
         </li>
         <li>
@@ -88,7 +91,7 @@ export function Header({ name, currentPage, onNavigate }) {
               }
             }}
           >
-            Portfolio
+            {t.navPortfolio}
           </span>
         </li>
         <li>
@@ -96,7 +99,7 @@ export function Header({ name, currentPage, onNavigate }) {
             className={`nav-item-link ${isHome && activeAnchor === "#skills" ? "active" : ""}`}
             onClick={() => scrollToSection("skills")}
           >
-            Skills
+            {t.navSkills}
           </span>
         </li>
         <li>
@@ -104,19 +107,29 @@ export function Header({ name, currentPage, onNavigate }) {
             className={`nav-item-link ${isHome && activeAnchor === "#contact" ? "active" : ""}`}
             onClick={() => scrollToSection("contact")}
           >
-            Contact
+            {t.navContact}
           </span>
         </li>
       </ul>
 
-      <a 
-        href="https://wa.me/96899100882" 
-        target="_blank"
-        rel="noopener noreferrer"
-        className="header-cta-btn"
-      >
-        Let's Talk
-      </a>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <button 
+          type="button" 
+          onClick={onToggleLang} 
+          className="lang-toggle-btn"
+        >
+          🌐 {currentLang === "en" ? "العربية" : "English"}
+        </button>
+
+        <a 
+          href="https://wa.me/96899100882" 
+          target="_blank"
+          rel="noopener noreferrer"
+          className="header-cta-btn"
+        >
+          {t.btnLetsTalk}
+        </a>
+      </div>
     </header>
   );
 }
