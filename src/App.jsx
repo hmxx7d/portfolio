@@ -64,7 +64,7 @@ function App() {
   const [isSaving, setIsSaving] = useState(false);
   
   const [currentLang, setCurrentLang] = useState(() => {
-    return localStorage.getItem("lang") || "ar";
+    return localStorage.getItem("lang") || "en";
   });
 
   // Listen to language changes to update page layout direction
