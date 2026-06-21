@@ -28,26 +28,34 @@ export function ServicesPage({ name, services = [] }) {
               opacity: 1 
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-              <div className="skill-item-icon-box" style={{ margin: 0 }}>
+            <div className="service-card-header">
+              <div className="service-icon-box">
                 {srv.icon || "📐"}
               </div>
-              <h3 className="service-item-title" style={{ margin: 0 }}>{srv.title}</h3>
+              <h3 className="service-item-title">{srv.title}</h3>
             </div>
             
-            <p className="service-desc" style={{ maxWidth: "100%", color: "var(--text-secondary)", marginBottom: "16px" }}>
+            <p className="service-desc" style={{ maxWidth: "100%", color: "var(--text-secondary)" }}>
               {srv.desc}
             </p>
 
             {srv.features && srv.features.length > 0 && (
-              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "8px", marginTop: "auto" }}>
+              <div className="service-features-list">
                 {srv.features.map((feat, fIdx) => (
-                  <li key={fIdx} style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span style={{ color: "var(--violet)" }}>✓</span> {feat}
-                  </li>
+                  <span key={fIdx} className="service-tag-badge">{feat}</span>
                 ))}
-              </ul>
+              </div>
             )}
+
+            <div className="service-card-footer" style={{ borderTop: "1px solid var(--border)", paddingTop: "12px", marginTop: "8px" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontWeight: "600" }}>Get Started</span>
+              <a href="#contact" className="service-arrow-btn" title="Order Service">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </a>
+            </div>
           </div>
         ))}
       </div>
