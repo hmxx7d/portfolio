@@ -219,6 +219,7 @@ function App() {
                   bio={profile.bio}
                   avatar={profile.avatar}
                   details={profile.details}
+                  resumeUrl={profile.resumeUrl}
                 />
 
                 <PortfolioSection 

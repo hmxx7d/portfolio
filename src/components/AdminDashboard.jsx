@@ -38,6 +38,8 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
         handleProjectChange(id, "image", publicUrl);
       } else if (type === "service") {
         handleServiceChange(id, "image", publicUrl);
+      } else if (type === "resume") {
+        handleFieldChange("resumeUrl", publicUrl);
       }
     } catch (err) {
       alert("Error uploading image: " + err.message);
@@ -470,6 +472,29 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving }) {
                     e.target.value.split(",").map(i => i.trim()).filter(Boolean)
                   )} 
                 />
+              </div>
+
+              <div className="form-group full-width">
+                <label>CV / Resume File (PDF or Word)</label>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <input 
+                    type="text" 
+                    value={formData.resumeUrl || ""} 
+                    onChange={e => handleFieldChange("resumeUrl", e.target.value)} 
+                    placeholder="Upload your CV/Resume file or paste public URL"
+                    style={{ flex: 1 }}
+                  />
+                  <label className="btn-add-item" style={{ margin: 0, padding: "8px 12px", fontSize: "12px", cursor: "pointer", display: "inline-block", textAlign: "center", whiteSpace: "nowrap" }}>
+                    {uploading["resume_file"] ? "Uploading..." : "📁 Upload CV"}
+                    <input 
+                      type="file" 
+                      accept=".pdf,.doc,.docx" 
+                      onChange={e => handleImageUpload(e, "resume", "file")} 
+                      style={{ display: "none" }}
+                      disabled={uploading["resume_file"]}
+                    />
+                  </label>
+                </div>
               </div>
 
               <h3 className="full-width" style={{ color: "var(--violet)", marginTop: "20px", marginBottom: "10px" }}>Social Media Profiles</h3>

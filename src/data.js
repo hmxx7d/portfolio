@@ -4,6 +4,7 @@ export const profileData = {
   bio: "Self-taught full-stack developer with 4+ years of experience crafting modern, performant, and user-centric web & mobile experiences that leave a lasting impression.",
   interests: ["💻 Coding", "🎨 Design", "🤖 AI/ML", "🎮 Gaming"],
   avatar: "/avatar.jpeg",
+  resumeUrl: "",
   details: {
     age: "26 years",
     email: "iamsunilfreelancer@gmail.com",
