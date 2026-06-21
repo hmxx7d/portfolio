@@ -221,14 +221,14 @@ function App() {
                   details={profile.details}
                 />
 
-                <ServicesSection 
-                  services={profile.services} 
-                  onSeeAllServices={() => setCurrentPage("services")} 
-                />
-
                 <PortfolioSection 
                   projects={profile.projects} 
                   onSeeAllProjects={() => setCurrentPage("projects")}
+                />
+
+                <ServicesSection 
+                  services={profile.services} 
+                  onSeeAllServices={() => setCurrentPage("services")} 
                 />
 
                 <SkillsSection skills={profile.skills} />
