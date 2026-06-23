@@ -6,7 +6,6 @@ export function Login({ onClose, onAuthSuccess }) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
   const [message, setMessage] = useState("");
 
   const handleSubmit = async (e) => {
@@ -16,22 +15,13 @@ export function Login({ onClose, onAuthSuccess }) {
     setMessage("");
 
     try {
-      if (isSignUp) {
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (signUpError) throw signUpError;
-        setMessage("Check your email for the confirmation link!");
-      } else {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (signInError) throw signInError;
-        if (onAuthSuccess) onAuthSuccess(data.session);
-        onClose();
-      }
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (signInError) throw signInError;
+      if (onAuthSuccess) onAuthSuccess(data.session);
+      onClose();
     } catch (err) {
       setError(err.message || "Something went wrong. Please check your credentials.");
     } finally {
@@ -86,10 +76,10 @@ export function Login({ onClose, onAuthSuccess }) {
             ⚡
           </div>
           <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#fff", marginBottom: "8px" }}>
-            {isSignUp ? "Create Admin Account" : "Admin Dashboard Sign In"}
+            Admin Dashboard Sign In
           </h2>
           <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>
-            {isSignUp ? "Register your administrator credentials" : "Enter your credentials to access the admin panel"}
+            Enter your credentials to access the admin panel
           </p>
         </div>
 
@@ -191,30 +181,9 @@ export function Login({ onClose, onAuthSuccess }) {
             onMouseEnter={(e) => { if(!loading) e.target.style.transform = "scale(1.02)" }}
             onMouseLeave={(e) => { if(!loading) e.target.style.transform = "scale(1)" }}
           >
-            {loading ? "Processing..." : isSignUp ? "Sign Up Admin" : "Login"}
+            {loading ? "Processing..." : "Login"}
           </button>
         </form>
-
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <button 
-            type="button"
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setError("");
-              setMessage("");
-            }}
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--violet)",
-              fontSize: "14px",
-              cursor: "pointer",
-              textDecoration: "underline"
-            }}
-          >
-            {isSignUp ? "Already have an account? Sign In" : "Need to register? Sign Up"}
-          </button>
-        </div>
       </div>
     </div>
   );
