@@ -1,11 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
+import { uiTranslations } from "../translations";
 
 export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving, currentLang }) {
   const [activeTab, setActiveTab] = useState("general");
   const [formData, setFormData] = useState(data);
   const [uploading, setUploading] = useState({});
   const [editingLang, setEditingLang] = useState(currentLang || "ar");
+  
+  const [submissions, setSubmissions] = useState([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
+
+  useEffect(() => {
+    if (activeTab === "submissions") {
+      const fetchSubmissions = async () => {
+        setLoadingSubmissions(true);
+        setSubmissionError("");
+        try {
+          const { data, error } = await supabase
+            .from("submissions")
+            .select("*")
+            .order("created_at", { ascending: false });
+          if (error) throw error;
+          setSubmissions(data || []);
+        } catch (err) {
+          console.error("Error fetching submissions:", err);
+          setSubmissionError(err.message || "Failed to load submissions.");
+        } finally {
+          setLoadingSubmissions(false);
+        }
+      };
+      fetchSubmissions();
+    }
+  }, [activeTab]);
+
+  const handleDeleteSubmission = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this submission?")) return;
+    try {
+      const { error } = await supabase
+        .from("submissions")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+      setSubmissions(prev => prev.filter(sub => sub.id !== id));
+    } catch (err) {
+      alert("Error deleting submission: " + err.message);
+    }
+  };
 
   // Helper to upload images to Supabase Storage
   const handleImageUpload = async (e, type, id) => {
@@ -374,6 +416,13 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving, curr
             onClick={() => setActiveTab("testimonials")}
           >
             💬 Testimonials
+          </button>
+          <button 
+            type="button"
+            className={`admin-tab-btn ${activeTab === "submissions" ? "active" : ""}`}
+            onClick={() => setActiveTab("submissions")}
+          >
+            {uiTranslations[editingLang].dashTabSubmissions || "💬 Submissions"}
           </button>
         </div>
         <div className="admin-sidebar-footer" style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "15px" }}>
@@ -1071,6 +1120,112 @@ export function AdminDashboard({ data, onSave, onClose, onLogout, isSaving, curr
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* ───────────────── SUBMISSIONS TAB ───────────────── */}
+          {activeTab === "submissions" && (
+            <div className="admin-list-section">
+              <div className="section-action-header" style={{ marginBottom: "20px" }}>
+                <h3>{editingLang === "ar" ? "الردود والاستفسارات المستلمة" : "Received Submissions & Inquiries"} ({submissions.length})</h3>
+              </div>
+
+              {loadingSubmissions ? (
+                <div style={{ padding: "40px", textAlign: "center", color: "var(--violet)", fontSize: "1.1rem" }}>
+                  {editingLang === "ar" ? "جاري تحميل الردود..." : "Loading submissions..."}
+                </div>
+              ) : submissionError ? (
+                <div style={{ padding: "20px", color: "#ff8296", background: "rgba(244,63,94,0.1)", borderRadius: "10px", border: "1px solid var(--rose)" }}>
+                  ⚠️ {submissionError}
+                </div>
+              ) : submissions.length === 0 ? (
+                <div style={{ padding: "40px", textAlign: "center", color: "var(--text-secondary)" }}>
+                  {editingLang === "ar" ? "لا توجد أي ردود أو استفسارات حالياً." : "No submissions or inquiries found."}
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                  {submissions.map((sub) => (
+                    <div 
+                      key={sub.id} 
+                      className="item-edit-card" 
+                      style={{ 
+                        border: "1px solid rgba(255, 255, 255, 0.08)", 
+                        background: "rgba(14, 15, 22, 0.6)", 
+                        padding: "20px", 
+                        borderRadius: "12px",
+                        boxShadow: "0 4px 20px rgba(0,0,0,0.2)"
+                      }}
+                    >
+                      <div className="item-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "10px" }}>
+                        <span style={{ fontSize: "0.85rem", color: "var(--violet)", fontWeight: "600" }}>
+                          📅 {new Date(sub.created_at).toLocaleString(editingLang === "ar" ? "ar-OM" : "en-US")}
+                        </span>
+                        <button 
+                          type="button" 
+                          className="btn-delete"
+                          onClick={() => handleDeleteSubmission(sub.id)}
+                          style={{
+                            background: "rgba(244, 63, 94, 0.15)",
+                            color: "#ff8296",
+                            border: "1px solid var(--rose)",
+                            padding: "6px 12px",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            fontSize: "0.85rem"
+                          }}
+                        >
+                          {editingLang === "ar" ? "🗑️ حذف" : "🗑️ Delete"}
+                        </button>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px" }}>
+                        <div>
+                          <strong style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", textTransform: "uppercase" }}>
+                            {editingLang === "ar" ? "الاسم" : "Name"}
+                          </strong>
+                          <span style={{ color: "#fff", fontWeight: "600", fontSize: "1.05rem" }}>{sub.name}</span>
+                        </div>
+                        <div>
+                          <strong style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", textTransform: "uppercase" }}>
+                            {editingLang === "ar" ? "رقم الهاتف" : "Phone Number"}
+                          </strong>
+                          <span style={{ color: "var(--violet)", fontWeight: "700", fontSize: "1.05rem", letterSpacing: "0.5px" }}>{sub.phone}</span>
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <strong style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "6px", textTransform: "uppercase" }}>
+                            {editingLang === "ar" ? "الاستفسار / الرسالة" : "Inquiry / Message"}
+                          </strong>
+                          <div style={{ 
+                            background: "rgba(0, 0, 0, 0.3)", 
+                            padding: "12px 16px", 
+                            borderRadius: "8px", 
+                            color: "#e2e8f0",
+                            fontSize: "0.95rem",
+                            lineHeight: "1.5",
+                            minHeight: "50px",
+                            whiteSpace: "pre-wrap",
+                            border: "1px solid rgba(255,255,255,0.03)"
+                          }}>
+                            {sub.inquiry || (editingLang === "ar" ? "(لا يوجد استفسار)" : "(No inquiry details)")}
+                          </div>
+                        </div>
+                        <div>
+                          <strong style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", textTransform: "uppercase" }}>
+                            {editingLang === "ar" ? "عنوان الـ IP" : "IP Address"}
+                          </strong>
+                          <span style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>{sub.ip || "Unknown"}</span>
+                        </div>
+                        <div>
+                          <strong style={{ display: "block", fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "4px", textTransform: "uppercase" }}>
+                            {editingLang === "ar" ? "معرف المتصفح" : "Browser ID"}
+                          </strong>
+                          <span style={{ color: "var(--text-secondary)", fontSize: "0.85rem", wordBreak: "break-all" }}>{sub.browser_fingerprint || "Unknown"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

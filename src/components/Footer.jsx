@@ -1,5 +1,24 @@
-import React from "react";
+import React, { useState } from "react";
 import { uiTranslations } from "../translations";
+import { supabase } from "../supabaseClient";
+
+function getBrowserFingerprint() {
+  let fp = localStorage.getItem("browser_fp");
+  if (!fp) {
+    const match = document.cookie.match(/(?:^|; )browser_fp=([^;]*)/);
+    if (match) {
+      fp = match[1];
+      localStorage.setItem("browser_fp", fp);
+    } else {
+      fp = 'fp_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem("browser_fp", fp);
+      document.cookie = `browser_fp=${fp}; max-age=31536000; path=/; SameSite=Lax`;
+    }
+  } else {
+    document.cookie = `browser_fp=${fp}; max-age=31536000; path=/; SameSite=Lax`;
+  }
+  return fp;
+}
 
 const getSocialIcon = (name) => {
   switch (name.toLowerCase()) {
@@ -40,6 +59,100 @@ export function Footer({ name, details, socials, currentPage, onNavigate, curren
   const logoText = name ? name.split(" ")[0] : "Sunil";
   const logoInitials = logoText.slice(0, 2).toUpperCase();
   const t = uiTranslations[currentLang || "ar"];
+
+  const [formData, setFormData] = useState({ name: "", phone: "", inquiry: "" });
+  const [loading, setLoading] = useState(false);
+  const [statusMsg, setStatusMsg] = useState({ type: "", text: "" });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatusMsg({ type: "", text: "" });
+
+    const rawName = formData.name.trim().replace(/<[^>]*>/g, "");
+    const rawPhone = formData.phone.trim().replace(/\s+/g, "");
+    const rawInquiry = formData.inquiry.trim().replace(/<[^>]*>/g, "");
+
+    if (!rawName || rawName.length > 20) {
+      setLoading(false);
+      setStatusMsg({ 
+        type: "error", 
+        text: currentLang === "ar" ? "الاسم يجب أن يكون أقل من 20 حرفاً." : "Name must be less than 20 characters." 
+      });
+      return;
+    }
+
+    if (!/^\d{8}$/.test(rawPhone)) {
+      setLoading(false);
+      setStatusMsg({ 
+        type: "error", 
+        text: currentLang === "ar" ? "رقم الهاتف يجب أن يتكون من 8 أرقام فقط." : "Phone number must be exactly 8 digits." 
+      });
+      return;
+    }
+
+    const browserFp = getBrowserFingerprint();
+    const lastSubmit = localStorage.getItem("last_submit_time");
+    const now = Date.now();
+    
+    if (lastSubmit && (now - parseInt(lastSubmit) < 60000)) {
+      setLoading(false);
+      setStatusMsg({
+        type: "error",
+        text: currentLang === "ar" 
+          ? "يمكنك إرسال رسالة واحدة فقط كل دقيقة. يرجى الانتظار." 
+          : "You can only send one message per minute. Please wait."
+      });
+      return;
+    }
+
+    try {
+      let clientIp = "";
+      try {
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipRes.json();
+        clientIp = ipData.ip || "";
+      } catch (ipErr) {
+        console.warn("Could not fetch IP:", ipErr);
+      }
+
+      const { error: submitErr } = await supabase
+        .from("submissions")
+        .insert({
+          name: rawName,
+          phone: rawPhone,
+          inquiry: rawInquiry || null,
+          ip: clientIp || null,
+          browser_fingerprint: browserFp
+        });
+
+      if (submitErr) {
+        if (submitErr.message && submitErr.message.includes("check_rate_limit")) {
+          throw new Error(currentLang === "ar"
+            ? "لقد تجاوزت حد الإرسال المسموح به. يرجى المحاولة لاحقاً."
+            : "You have exceeded the rate limit. Please try again later."
+          );
+        }
+        throw submitErr;
+      }
+
+      localStorage.setItem("last_submit_time", now.toString());
+
+      setStatusMsg({
+        type: "success",
+        text: t.footerInquirySuccess || "Thank you! Message sent."
+      });
+      setFormData({ name: "", phone: "", inquiry: "" });
+    } catch (err) {
+      console.error("Error submitting inquiry:", err);
+      setStatusMsg({
+        type: "error",
+        text: err.message || (t.footerInquiryError || "Error sending message.")
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const scrollToSection = (id) => {
     if (currentPage !== "home") {
@@ -120,18 +233,87 @@ export function Footer({ name, details, socials, currentPage, onNavigate, curren
 
           <div className="footer-column">
             <h4 className="footer-heading">{t.footerSubscribeHeader}</h4>
-            <div className="footer-subscription-form">
-              <p className="footer-desc-text">{t.footerSubscribeText}</p>
-              <div className="newsletter-input-box">
-                <input type="email" placeholder={t.footerSubscribePlaceholder} />
-                <button className="newsletter-submit-btn" title="Subscribe">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13" />
-                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                  </svg>
-                </button>
+            <form onSubmit={handleSubmit} className="footer-subscription-form" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <p className="footer-desc-text" style={{ marginBottom: "5px" }}>{t.footerSubscribeText}</p>
+              
+              <div className="contact-input-group">
+                <input 
+                  type="text" 
+                  required
+                  maxLength={20}
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder={t.footerNamePlaceholder}
+                  className="contact-form-input"
+                />
               </div>
-            </div>
+
+              <div className="contact-input-group">
+                <input 
+                  type="text" 
+                  required
+                  maxLength={8}
+                  value={formData.phone}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "");
+                    setFormData(prev => ({ ...prev, phone: val }));
+                  }}
+                  placeholder={t.footerPhonePlaceholder}
+                  className="contact-form-input"
+                />
+              </div>
+
+              <div className="contact-input-group">
+                <textarea 
+                  value={formData.inquiry}
+                  onChange={(e) => setFormData(prev => ({ ...prev, inquiry: e.target.value }))}
+                  placeholder={t.footerInquiryPlaceholder}
+                  rows="3"
+                  className="contact-form-textarea"
+                  style={{ resize: "none" }}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="contact-form-submit-btn"
+                style={{
+                  background: "var(--violet)",
+                  color: "#fff",
+                  border: "none",
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  transition: "background 0.3s, transform 0.2s",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  marginTop: "5px"
+                }}
+                onMouseEnter={(e) => { if (!loading) e.target.style.background = "var(--cyan)" }}
+                onMouseLeave={(e) => { if (!loading) e.target.style.background = "var(--violet)" }}
+              >
+                {loading ? (currentLang === "ar" ? "جاري الإرسال..." : "Sending...") : t.footerSubmitBtn}
+              </button>
+
+              {statusMsg.text && (
+                <div style={{
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  fontSize: "0.8rem",
+                  marginTop: "5px",
+                  background: statusMsg.type === "success" ? "rgba(16, 185, 129, 0.1)" : "rgba(244, 63, 94, 0.1)",
+                  border: `1px solid ${statusMsg.type === "success" ? "var(--emerald)" : "var(--rose)"}`,
+                  color: statusMsg.type === "success" ? "#34d399" : "#ff8296",
+                  lineHeight: "1.4"
+                }}>
+                  {statusMsg.type === "success" ? "✓ " : "⚠️ "} {statusMsg.text}
+                </div>
+              )}
+            </form>
           </div>
         </div>
 

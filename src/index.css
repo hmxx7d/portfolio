@@ -1117,6 +1117,25 @@ body {
   height: 14px;
 }
 
+.contact-form-input,
+.contact-form-textarea {
+  width: 100%;
+  background: var(--card-bg-2) !important;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.contact-form-input:focus,
+.contact-form-textarea:focus {
+  border-color: var(--violet);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+  outline: none;
+}
+
 .footer-social-row {
   display: flex;
   gap: 8px;
